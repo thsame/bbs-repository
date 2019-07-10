@@ -1,13 +1,21 @@
   <?php
+
+    function h($str) {
+      return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
+    }
+
+    $name = (string)filter_input(INPUT_POST, 'name'); // $_POST['name']
+    $text = (string)filter_input(INPUT_POST, 'text'); // $_POST['text']
     $fp = fopen('data.csv','a+b');
     if($_SERVER['REQUEST_METHOD'] === 'POST'){
-
-      fputcsv($fp,[$_POST['name'],$_POST['text']]);
+      flock($fp, LOCK_EX); // 排他ロックを行う
+      fputcsv($fp,[$name,$text]);
       rewind($fp);
     }
     while($row = fgetcsv($fp)){
       $rows[] = $row;
     }
+    flock($fp, LOCK_UN); // ロック解除
     fclose($fp);
    ?>
   <?php
@@ -25,7 +33,7 @@
       <?php if (!empty($rows)): ?>
           <ul>
       <?php foreach ($rows as $row): ?>
-              <li><?=$row[1]?> (<?=$row[0]?>)</li>
+              <li><?=h($row[1])?> (<?=h($row[0])?>)</li>
       <?php endforeach; ?>
           </ul>
       <?php else: ?>
